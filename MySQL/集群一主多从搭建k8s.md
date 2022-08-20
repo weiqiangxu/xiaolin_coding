@@ -4,13 +4,24 @@
 #### docker拉镜像
 docker pull mysql:5.7
 
-### 主库master节点
+### 主库配置挂载宿主机
 ```
 mkdir /Users/xuweiqiang/Documents/mysql
 mkdir /Users/xuweiqiang/Documents/mysql/conf
+touch /Users/xuweiqiang/Documents/mysql/conf/my.conf
+vim /Users/xuweiqiang/Documents/mysql/conf/my.conf
+```
+```
+[mysqld]
+# 设置 server_id 唯一
+server-id=1
+# 开启二进制日志功能 
+log-bin=mysql-master-bin-log
+# relay_log 配置中继日志
+relay_log=edu-mysql-relay-bin
 ```
 
-### 启动服务
+### 启动master服务
 ```
 $ docker run -d \
 --name=mysql-master \
@@ -22,16 +33,6 @@ $ docker run -d \
 ```
 ```
 touch /Users/xuweiqiang/Documents/mysql/conf/my.cnf
-```
-# 设置conf打开binlog集群模式
-```
-[mysqld]
-# 设置 server_id 唯一
-server-id=1
-# 开启二进制日志功能 
-log-bin=mysql-master-bin-log
-# relay_log 配置中继日志
-relay_log=edu-mysql-relay-bin
 ```
 
 # 查看master状态
@@ -68,24 +69,29 @@ DROP USER 'slave'@'%';
 
 
 
-### 从库
+### 从库配置挂载宿主机
 ```
-$ docker run --restart=always \
--d --name=mysql --privileged=true -p 3306:3306 \
--e MYSQL_ROOT_PASSWORD=root \
--v /Users/xuweiqiang/Documents/mysql/my.cnf:/etc/mysql/my.cnf \
--v /Users/xuweiqiang/Documents/mysql/logs:/var/log/mysql \
--v /Users/xuweiqiang/Documents//mysql/data:/var/lib/mysql \
--v /etc/localtime:/etc/localtime mysql
+mkdir -p /Users/xuweiqiang/Documents/mysql/slave/conf
+touch /Users/xuweiqiang/Documents/mysql/slave/conf/my.conf
+vim /Users/xuweiqiang/Documents/mysql/slave/conf/my.conf
+```
+```
+[mysqld]
+# 设置 server_id 唯一
+server-id=2
+# 开启二进制日志功能 
+log-bin=mysql-slave-bin-log
 ```
 
-### 从库配置
+### 启动slave服务
 ```
-$ cat /usr/local/mysql/my.cnf 
-[mysqld]
-server-id=2
-# 开启二进制日志功能
-log-bin=mysql-bin
+$ docker run -d \
+--name=mysql-slave \
+--privileged=true \
+-p 3306:3306 \
+-e MYSQL_ROOT_PASSWORD=123456 \
+-v /Users/xuweiqiang/Documents/mysql/slave/conf:/etc/mysql/conf.d \
+-v /etc/localtime:/etc/localtime mysql:8.0
 ```
 
 ### 服务重启
