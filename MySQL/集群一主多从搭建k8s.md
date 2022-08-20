@@ -33,14 +33,11 @@ $ docker run -d \
 
 # 查看master状态
 ```
+docker exec -it mysql-master /bin/bash
 mysql -uroot -p
 show master status
 ```
-# 添加slave访问用户
-```
-docker ps -a
-docker exec -it [容器ID] /bin/bash
-```
+# 添加访问用户
 ```
 mysql -uroot -p
 ```
@@ -84,10 +81,15 @@ log-bin=mysql-slave-bin-log
 $ docker run -d \
 --name=mysql-slave \
 --privileged=true \
--p 3306:3306 \
+-p 3308:3306 \
 -e MYSQL_ROOT_PASSWORD=123456 \
 -v /Users/xuweiqiang/Documents/mysql/slave/conf:/etc/mysql/conf.d \
 -v /etc/localtime:/etc/localtime mysql:8.0
+```
+```
+docker exec -it mysql-slave /bin/bash
+mysql -uroot -p
+show slave status;
 ```
 
 ### 服务重启
