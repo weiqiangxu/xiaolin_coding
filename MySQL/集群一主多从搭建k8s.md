@@ -1,10 +1,14 @@
 # 集群一主多从搭建k8s
 
 ### 搭建步骤
-#### docker拉镜像
-docker pull mysql:5.7
 
-### 主库配置挂载宿主机
+### 1.创建容器内网络
+```
+docker network create mysql_net
+docker network ls
+```
+
+### 2.配置主库的数据库配置
 ```
 mkdir -p /Users/xuweiqiang/Documents/mysql/master/conf
 touch /Users/xuweiqiang/Documents/mysql/master/conf/my.conf
@@ -18,29 +22,33 @@ server-id=1
 log-bin=mysql-master-bin-log
 # relay_log 配置中继日志
 relay_log=edu-mysql-relay-bin
+# 忽略同步的数据库
+binlog-ignore-db=information_schema
+binlog-ignore-db=performation_schema
+binlog-ignore-db=sys
+binlog-ignore-db=mysql
 ```
 
-### 启动master服务
+### 3.启动master服务
 ```
-$ docker run -d \
+docker run -d \
 --name=mysql-master \
 --privileged=true \
 -p 3306:3306 \
+--network mysql_net \
+--network-alias master \
 -e MYSQL_ROOT_PASSWORD=123456 \
 -v /Users/xuweiqiang/Documents/mysql/master/conf:/etc/mysql/conf.d \
 -v /etc/localtime:/etc/localtime mysql:8.0
 ```
 
-# 查看master状态
+# 4.查看master状态获取File和Position
 ```
 docker exec -it mysql-master /bin/bash
 mysql -uroot -p
-show master status
+show master status;
 ```
-# 添加访问用户
-```
-mysql -uroot -p
-```
+# 5.主库添加访问用户Slave
 ```
 # 创建同步用户
 CREATE USER 'slave'@'%' IDENTIFIED BY '123456';
@@ -60,9 +68,10 @@ SHOW GRANTS FOR 'slave'@'%';
 DROP USER 'slave'@'%';
 ```
 
+<hr/>
 
 
-### 从库配置挂载宿主机
+### 1.设置从库的数据库配置
 ```
 mkdir -p /Users/xuweiqiang/Documents/mysql/slave/conf
 touch /Users/xuweiqiang/Documents/mysql/slave/conf/my.conf
@@ -76,11 +85,13 @@ server-id=2
 log-bin=mysql-slave-bin-log
 ```
 
-### 启动slave服务
+### 2.启动slave服务
 ```
-$ docker run -d \
+docker run -d \
 --name=mysql-slave \
 --privileged=true \
+--network mysql_net \
+--network-alias slave \
 -p 3308:3306 \
 -e MYSQL_ROOT_PASSWORD=123456 \
 -v /Users/xuweiqiang/Documents/mysql/slave/conf:/etc/mysql/conf.d \
@@ -89,20 +100,32 @@ $ docker run -d \
 ```
 docker exec -it mysql-slave /bin/bash
 mysql -uroot -p
+```
+
+### 3. 设置从库连接主库
+```
+CHANGE MASTER TO master_host = 'master',
+master_user = 'slave',
+master_password = '123456',
+master_port = 3306,
+master_log_file = 'binlog.000002',
+master_log_pos = 157,
+master_connect_retry = 30;
+```
+### 4.查看从库状态
+```
 show slave status;
 ```
 
-### 服务重启
-```
-$ docker restart 容器ID
-```
 
-### 查询所有用户
+### 参考所有指令
+
 ```
-use mysql
+# 查看所有用户
+use mysql;
 select user,HOST from user;
 ```
 
 ### 参考博客
 
-(基于docker搭建的)[https://www.mobaijun.com/posts/572796845.html]
+[基于docker搭建的](https://www.mobaijun.com/posts/572796845.html)
