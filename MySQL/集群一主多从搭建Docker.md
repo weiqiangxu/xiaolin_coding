@@ -63,13 +63,13 @@ docker run -d \
 -v /etc/localtime:/etc/localtime mysql:8.0
 ```
 
-# 4.查看master状态获取File和Position
+### 4.查看master状态获取File和Position
 ```
 docker exec -it mysql-master /bin/bash
 mysql -uroot -p
 show master status;
 ```
-# 5.主库添加访问用户Slave
+### 5.主库添加访问用户Slave
 ```
 # 创建同步用户
 CREATE USER 'slave'@'%' IDENTIFIED BY '123456';
