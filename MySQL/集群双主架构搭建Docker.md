@@ -26,6 +26,7 @@ pid-file=/var/run/mysqld/mysqld.pid
 # 以下是自定义的配置
 server-id=1
 log-bin=mysql-bin-log
+binlog-format = ROW
 sync-binlog=1
 expire-logs-days=7
 relay_log=mysql-relay-bin
@@ -95,6 +96,7 @@ pid-file=/var/run/mysqld/mysqld.pid
 # 以下是自定义的配置
 server-id=2
 log-bin=mysql-bin-log
+binlog-format = ROW
 sync-binlog=1
 expire-logs-days=7
 relay_log=mysql-relay-bin
@@ -195,5 +197,10 @@ select user,HOST from user;
 
 # change master指令的 master_log_file 和 master_log_pos 需要登陆目标host机器查看
 show master status;
+
+# binlog格式行
+binlog-format = ROW
+# 混合模式
+binlog_format=MIXED
 
 ```
