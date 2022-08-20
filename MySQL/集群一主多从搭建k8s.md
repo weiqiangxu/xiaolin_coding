@@ -6,10 +6,9 @@ docker pull mysql:5.7
 
 ### 主库配置挂载宿主机
 ```
-mkdir /Users/xuweiqiang/Documents/mysql
-mkdir /Users/xuweiqiang/Documents/mysql/conf
-touch /Users/xuweiqiang/Documents/mysql/conf/my.conf
-vim /Users/xuweiqiang/Documents/mysql/conf/my.conf
+mkdir -p /Users/xuweiqiang/Documents/mysql/master/conf
+touch /Users/xuweiqiang/Documents/mysql/master/conf/my.conf
+vim /Users/xuweiqiang/Documents/mysql/master/conf/my.conf
 ```
 ```
 [mysqld]
@@ -28,11 +27,8 @@ $ docker run -d \
 --privileged=true \
 -p 3306:3306 \
 -e MYSQL_ROOT_PASSWORD=123456 \
--v /Users/xuweiqiang/Documents/mysql/conf:/etc/mysql/conf.d \
+-v /Users/xuweiqiang/Documents/mysql/master/conf:/etc/mysql/conf.d \
 -v /etc/localtime:/etc/localtime mysql:8.0
-```
-```
-touch /Users/xuweiqiang/Documents/mysql/conf/my.cnf
 ```
 
 # 查看master状态
