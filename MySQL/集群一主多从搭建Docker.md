@@ -10,36 +10,44 @@ docker network ls
 
 ### 2.配置主库的数据库配置
 ```
-mkdir -p /Users/xuweiqiang/Documents/mysql/master/conf
-touch /Users/xuweiqiang/Documents/mysql/master/conf/my.conf
-vim /Users/xuweiqiang/Documents/mysql/master/conf/my.conf
+mkdir -p /Users/xuweiqiang/Documents/mysql/master/
+touch /Users/xuweiqiang/Documents/mysql/master/my.cnf
+vim /Users/xuweiqiang/Documents/mysql/master/my.cnf
 ```
 ```
+# For advice on how to change settings please see
+# http://dev.mysql.com/doc/refman/8.0/en/server-configuration-defaults.html
 [mysqld]
+skip-host-cache
+skip-name-resolve
+datadir=/var/lib/mysql
+socket=/var/run/mysqld/mysqld.sock
+secure-file-priv=/var/lib/mysql-files
+user=mysql
+pid-file=/var/run/mysqld/mysqld.pid
+# 以下是自定义的配置
 # 服务器唯一ID
 server-id=1
-
 #指定binlog的存储位置，日志格式为二进制
-log-bin=/var/lib/mysql/data/binlog/mysql-bin
-
+log-bin=mysql-bin
 #配置为1每次执行写入就与硬盘同步
 #如果不配置默认会等到缓冲区满了自动刷盘
 sync-binlog=1
-
 #需要同步的二进制数据库名如果有多个就多行binlog-do-db
 #binlog-do-db=user
-
 #只保留7天的二进制日志防磁盘被日志占满
 expire-logs-days=7
-
 # 中继日志
 relay_log=edu-mysql-relay-bin
-
 # 忽略同步的数据库
 binlog-ignore-db=information_schema
 binlog-ignore-db=performation_schema
 binlog-ignore-db=sys
 binlog-ignore-db=mysql
+# 自定义配置到这里结束
+[client]
+socket=/var/run/mysqld/mysqld.sock
+!includedir /etc/mysql/conf.d/
 ```
 
 ### 3.启动master服务
@@ -51,7 +59,7 @@ docker run -d \
 --network mysql_net \
 --network-alias master \
 -e MYSQL_ROOT_PASSWORD=123456 \
--v /Users/xuweiqiang/Documents/mysql/master/conf:/etc/mysql/conf.d \
+-v /Users/xuweiqiang/Documents/mysql/master/my.cnf:/etc/my.cnf \
 -v /etc/localtime:/etc/localtime mysql:8.0
 ```
 
@@ -90,34 +98,36 @@ DROP USER 'slave'@'%';
 
 ### 1.设置从库的数据库配置
 ```
-mkdir -p /Users/xuweiqiang/Documents/mysql/slave/conf
-touch /Users/xuweiqiang/Documents/mysql/slave/conf/my.conf
-vim /Users/xuweiqiang/Documents/mysql/slave/conf/my.conf
+mkdir -p /Users/xuweiqiang/Documents/mysql/slave/cnf
+touch /Users/xuweiqiang/Documents/mysql/slave/my.cnf
+vim /Users/xuweiqiang/Documents/mysql/slave/my.cnf
 ```
 ```
+# For advice on how to change settings please see
+# http://dev.mysql.com/doc/refman/8.0/en/server-configuration-defaults.html
 [mysqld]
+skip-host-cache
+skip-name-resolve
+datadir=/var/lib/mysql
+socket=/var/run/mysqld/mysqld.sock
+secure-file-priv=/var/lib/mysql-files
+user=mysql
+pid-file=/var/run/mysqld/mysqld.pid
 # 设置 server_id 唯一
 server-id=2
-
 # 开启二进制日志功能 
 log-bin=mysql-slave-bin-log
-
 #[必须开启]打开中继日志且日志格式为二进制                  
 relay_log = /var/lib/mysql/data/binlog/mysql-relay-bin
-
 #如果salve库名称与master库名相同，使用本配置     
 #replicate-do-db = user
-
 #如果master库名[artisan]与salve库名[user01]不同，使用以下配置[需要做映射]     
 #replicate-rewrite-db = artisan[主库名] -> user01[从库名]
-
 #如果不是要全部同步[默认全部同步]，则指定需要同步的表   
 #replicate-wild-do-table=user01.t_order    
 #replicate-wild-do-table=user01.t_order_item
-
 #设置只读权限 
 read_only = 1  
-
 #使得更新的数据写进二进制日志中       
 log_slave_updates = 1 
 ```
@@ -131,7 +141,7 @@ docker run -d \
 --network-alias slave \
 -p 3308:3306 \
 -e MYSQL_ROOT_PASSWORD=123456 \
--v /Users/xuweiqiang/Documents/mysql/slave/conf:/etc/mysql/conf.d \
+-v /Users/xuweiqiang/Documents/mysql/slave/my.cnf:/etc/mysql/my.cnf \
 -v /etc/localtime:/etc/localtime mysql:8.0
 ```
 ```
