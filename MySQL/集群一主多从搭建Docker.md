@@ -59,7 +59,7 @@ docker run -d \
 --network mysql_net \
 --network-alias master \
 -e MYSQL_ROOT_PASSWORD=123456 \
--v /Users/xuweiqiang/Documents/mysql/master/my.cnf:/etc/my.cnf \
+-v /Users/xuweiqiang/Documents/mysql/master/my.cnf:/etc/mysql/my.cnf \
 -v /etc/localtime:/etc/localtime mysql:8.0
 ```
 
@@ -98,13 +98,11 @@ DROP USER 'slave'@'%';
 
 ### 1.设置从库的数据库配置
 ```
-mkdir -p /Users/xuweiqiang/Documents/mysql/slave/cnf
+mkdir -p /Users/xuweiqiang/Documents/mysql/slave
 touch /Users/xuweiqiang/Documents/mysql/slave/my.cnf
 vim /Users/xuweiqiang/Documents/mysql/slave/my.cnf
 ```
 ```
-# For advice on how to change settings please see
-# http://dev.mysql.com/doc/refman/8.0/en/server-configuration-defaults.html
 [mysqld]
 skip-host-cache
 skip-name-resolve
@@ -117,8 +115,8 @@ pid-file=/var/run/mysqld/mysqld.pid
 server-id=2
 # 开启二进制日志功能 
 log-bin=mysql-slave-bin-log
-#[必须开启]打开中继日志且日志格式为二进制                  
-relay_log = /var/lib/mysql/data/binlog/mysql-relay-bin
+#[必须开启]中继日志                  
+relay_log = /var/lib/mysql/mysql-relay-bin
 #如果salve库名称与master库名相同，使用本配置     
 #replicate-do-db = user
 #如果master库名[artisan]与salve库名[user01]不同，使用以下配置[需要做映射]     
@@ -155,7 +153,7 @@ CHANGE MASTER TO master_host = 'master',
 master_user = 'slave',
 master_password = '123456',
 master_port = 3306,
-master_log_file = 'binlog.000002',
+master_log_file = 'mysql-bin.000001',
 master_log_pos = 157,
 master_connect_retry = 30;
 ```
@@ -164,15 +162,16 @@ master_connect_retry = 30;
 show slave status;
 ```
 
-### 5.查看线程状况
+### 5.开启主从复制
 ```
-show processlist;
-# 关注
-# Slave_IO_Running: Yes //IO线程正常运行
-# Slave_SQL_Running: Yes //SQL线程正常运行
+start slave;
+
+# 成功的标志是
+Slave_IO_Running: Yes
+Slave_SQL_Running: Yes
 ```
 
-### 参考所有指令
+### 参考指令
 
 ```
 # 查看所有用户
