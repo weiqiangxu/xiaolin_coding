@@ -1,6 +1,6 @@
 # 死锁
 
-### 简单描述
+### 简单描述 - 加锁的顺序导致的
 ```
 事务A获取行记录1的锁
 事务B获取行记录2的锁
@@ -93,4 +93,7 @@ Lock wait timeout exceeded!
 ```
 事务粒度小一点
 低级别事务隔离机制
+
+事务等待锁的超时时间 innodb_lock_wait_timeout 默认是50s
+主动死锁检测 innodb_deadlock_detect 检测到了以后主动回滚死锁链条之中的某一个事务
 ```
