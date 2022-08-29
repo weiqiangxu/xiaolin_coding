@@ -86,3 +86,7 @@ Redis 4.0 之后多一个 lazyfree 线程异步释放Redis内存
 ### Redis为什么这么快
 
 ### Redis的各种数据类型的底层的数据结构是啥
+
+### Redis的SDS和golang的Slice有什么区别
+
+### Slice的扩容之后
