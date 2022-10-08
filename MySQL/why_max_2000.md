@@ -45,3 +45,24 @@ bigint(8个字节) unsigned 2^64 - 1 如果非unsigned 是 -2^63 2^63 - 1
 ### 如果选择 unsigned int (42亿) 按照每秒钟insert 10条的话大概需要13年 , 而bigint 一秒增加1亿也要五千年
 
 
+### 存储引擎角度
+
+```
+innodb B+
+
+硬盘 person.ibd （innodb data）的文件 （表空间）
+
+物理上一个 ibd 文件里面有很多数据页（16kb）
+
+页里面存储空间7个， 其中 user record 才是具体行记录内容
+
+一堆计算... 
+
+B+ 2层 1.92w
+B+ 3层 2.45kw 也就是 2000w
+
+超过3层IO次数增加
+```
+
+
+
