@@ -40,6 +40,8 @@ Node {
 2. 数据结构上，每个节点有4个字段，每个节点可以持有最多32个不同距离的跳转节点地址(level)
 ```
 
+[用golang实现跳表](https://www.shouxicto.com/article/1646.html)
+
 ### 为什么使用zskiplist而不用平衡树和哈希表
 
 ```
